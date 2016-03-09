@@ -305,7 +305,7 @@ pub fn astar<S: SearchProblem>(s: &mut S) -> Option<VecDeque<S::Node>> where S::
             }
 
             let ng = node.g() + cost;
-            if !neighbor_node.opened.get() || ng < neighbor_node.g() {
+            if !neighbor_node.opened.get() {
                 let h = if neighbor_node.h() == Zero::zero() {
                     s.heuristic(neighbor_state)
                 } else {
@@ -317,14 +317,8 @@ pub fn astar<S: SearchProblem>(s: &mut S) -> Option<VecDeque<S::Node>> where S::
                 neighbor_node.set_f(ng + h);
                 neighbor_node.set_parent(node);
 
-                if !neighbor_node.opened.get() {
-                    neighbor_node.opened.set(true);
-                    heap.push(neighbor_node);
-                } else {
-                    // We reset the value that did sorting.  This forces a
-                    // recalculation.
-                    heap = heap_from_vec(vec_from_heap(heap)) // BinaryHeap::from_vec(heap.into_vec());
-                }
+                neighbor_node.opened.set(true);
+                heap.push(neighbor_node);
             }
         }
     }
@@ -342,14 +336,4 @@ pub fn astar<S: SearchProblem>(s: &mut S) -> Option<VecDeque<S::Node>> where S::
     } else {
         None
     }
-}
-
-fn heap_from_vec<T: Ord>(v: Vec<T>) -> BinaryHeap<T> {
-    let mut b_heap = BinaryHeap::with_capacity(v.len());
-    b_heap.extend(v.into_iter());
-    b_heap
-}
-
-fn vec_from_heap<T: Ord>(h: BinaryHeap<T>) -> Vec<T> {
-    h.into_iter().collect()
 }
